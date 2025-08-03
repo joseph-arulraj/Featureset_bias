@@ -8,7 +8,7 @@ from .feature_selection import FeatureImp
 from .classification import LSTMClassifier, MLPClassifier
 from .utils import train_model, evaluate_model
 class EHRPipeline:
-    def __init__(self, df, feature_cols, feature_importance_type, classification_model, imputation_before_feature_selection=False):
+    def __init__(self, df, feature_cols, feature_importance_type, classification_model, epochs, n_features, n_steps, batch_size, patience, imputation_before_feature_selection=False):
         self.original_df = df
         self.feature_importance_type = feature_importance_type
         self.performance_dict = {}
@@ -16,6 +16,12 @@ class EHRPipeline:
         self.imputation_before_feature_selection = imputation_before_feature_selection
         self.original_features = feature_cols
         self.classification_model = classification_model
+        self.epochs = epochs
+        self.n_features = n_features
+        self.n_steps = n_steps
+        self.batch_size = batch_size
+        self.patience = patience
+
 
 
 
@@ -27,10 +33,12 @@ class EHRPipeline:
 
         if self.imputation_before_feature_selection:
             self.train_batches, self.val_batches, self.test_batches = dataset_cl.process_data() 
-            imputation_model = Imputer(self.train_batches, self.val_batches, self.test_batches)
+            imputation_model = Imputer(self.train_batches, self.val_batches, self.test_batches, self.epochs, self.n_features, self.n_steps, self.batch_size, self.patience)
             imputation_model.prepare_data()
             imputation_model.train_brits()
             self.imputed_train, self.imputed_val, self.imputed_test = imputation_model.impute()
+            print('Imputation done...................................')
+
 
         feature_importance = FeatureImp(train_df, self.original_features)
         if self.feature_importance_type == 'most_common':
@@ -53,9 +61,24 @@ class EHRPipeline:
                 test_subset = self.imputed_test
                 val_subset = self.imputed_val
                 feature_indices = [self.original_features.index(f) for f in selected_features]
-                self.train_batches['sequences'] = [seq[:, :, feature_indices]for seq in train_subset]
-                self.val_batches['sequences'] = [seq[:, :, feature_indices]for seq in val_subset]
-                self.test_batches['sequences'] = [seq[:, :, feature_indices]for seq in test_subset]
+
+            for i, item in enumerate(train_subset):
+                seq_len = item['seq_length']
+                imputed_tensor = train_subset[seq_len]['imputation']  
+                item['sequences'] = imputed_tensor[:, :, feature_indices]
+            for i, item in enumerate(val_subset):
+                seq_len = item['seq_length']
+                imputed_tensor = val_subset[seq_len]['imputation']  
+                item['sequences'] = imputed_tensor[:, :, feature_indices]
+            for i, item in enumerate(test_subset):
+                seq_len = item['seq_length']
+                imputed_tensor = test_subset[seq_len]['imputation']  
+                item['sequences'] = imputed_tensor[:, :, feature_indices]
+
+
+                # self.train_batches['sequences'] = [seq[:, :, feature_indices]for seq in train_subset]
+                # self.val_batches['sequences'] = [seq[:, :, feature_indices]for seq in val_subset]
+                # self.test_batches['sequences'] = [seq[:, :, feature_indices]for seq in test_subset]
 
                 input_size = len(selected_features)
                 hidden_size = 128
