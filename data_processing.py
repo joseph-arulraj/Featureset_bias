@@ -25,7 +25,7 @@ class TimeSeriesDataset(torch.utils.data.Dataset):
 class Data:
     def __init__(self,df):
         self.orig_df = df
-        self.feature_columns = [ col for col in df.columns if col not in ['patientunitstayid', 'mortality', 'observationoffset']]  
+        self.feature_columns = [ col for col in df.columns if col not in ['patientunitstayid', 'mortality', 'observationoffset', 'gender', 'vitalperiodicid','hospitaldischargestatus']]  
         
         timeframe_counts = self.orig_df.groupby('patientunitstayid').size().reset_index(name='timeframe_count')
 

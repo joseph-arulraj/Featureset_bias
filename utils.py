@@ -60,8 +60,10 @@ def train_model(model, train_batches, val_batches, num_epochs=10, device='cuda' 
         np.random.shuffle(train_batches)
         
         for batch in train_batches:
-            sequences = batch['sequences'].to(device)
-            labels = batch['labels'].to(device)
+            # sequences = batch['sequences'].to(device)
+            # labels = batch['labels'].to(device)
+            sequences = torch.tensor(batch['sequences'], dtype=torch.float32).to(device)
+            labels = torch.tensor(batch['labels'], dtype=torch.long).to(device)
             
             optimizer.zero_grad()
             outputs = model(sequences)
@@ -81,8 +83,10 @@ def train_model(model, train_batches, val_batches, num_epochs=10, device='cuda' 
         val_preds, val_true = [], []
         with torch.no_grad():
             for batch in val_batches:
-                sequences = batch['sequences'].to(device)
-                labels = batch['labels'].to(device)
+                sequences = torch.tensor(batch['sequences'], dtype=torch.float32).to(device)
+                labels = torch.tensor(batch['labels'], dtype=torch.long).to(device)
+                # sequences = batch['sequences'].to(device)
+                # labels = batch['labels'].to(device)
                 outputs = model(sequences)
                 loss = criterion(outputs, labels)
                 val_loss += loss.item()
@@ -104,8 +108,10 @@ def evaluate_model(model, test_batches, device='cuda' if torch.cuda.is_available
     
     with torch.no_grad():
         for batch in test_batches:
-            sequences = batch['sequences'].to(device)
-            labels = batch['labels'].to(device)
+            # sequences = batch['sequences'].to(device)
+            # labels = batch['labels'].to(device)
+            sequences = torch.tensor(batch['sequences'], dtype=torch.float32).to(device)
+            labels = torch.tensor(batch['labels'], dtype=torch.long).to(device)
             outputs = model(sequences)
             test_preds.extend(torch.argmax(outputs, dim=1).cpu().numpy())
             test_true.extend(labels.cpu().numpy())

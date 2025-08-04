@@ -8,7 +8,7 @@ from .feature_selection import FeatureImp
 from .classification import LSTMClassifier, MLPClassifier
 from .utils import train_model, evaluate_model
 class EHRPipeline:
-    def __init__(self, df, feature_cols, feature_importance_type, classification_model, epochs, n_features, n_steps, batch_size, patience, imputation_before_feature_selection=False):
+    def __init__(self, df, feature_cols, feature_importance_type, classification_model, epochs, n_features, n_steps, batch_size, patience, imputation_before_feature_selection=True):
         self.original_df = df
         self.feature_importance_type = feature_importance_type
         self.performance_dict = {}
@@ -62,15 +62,15 @@ class EHRPipeline:
                 val_subset = self.imputed_val
                 feature_indices = [self.original_features.index(f) for f in selected_features]
 
-            for i, item in enumerate(train_subset):
+            for i, item in enumerate(self.train_batches):
                 seq_len = item['seq_length']
                 imputed_tensor = train_subset[seq_len]['imputation']  
                 item['sequences'] = imputed_tensor[:, :, feature_indices]
-            for i, item in enumerate(val_subset):
+            for i, item in enumerate(self.val_batches):
                 seq_len = item['seq_length']
                 imputed_tensor = val_subset[seq_len]['imputation']  
                 item['sequences'] = imputed_tensor[:, :, feature_indices]
-            for i, item in enumerate(test_subset):
+            for i, item in enumerate(self.test_batches):
                 seq_len = item['seq_length']
                 imputed_tensor = test_subset[seq_len]['imputation']  
                 item['sequences'] = imputed_tensor[:, :, feature_indices]
