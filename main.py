@@ -80,26 +80,26 @@ class EHRPipeline:
                 # self.val_batches['sequences'] = [seq[:, :, feature_indices]for seq in val_subset]
                 # self.test_batches['sequences'] = [seq[:, :, feature_indices]for seq in test_subset]
 
-                input_size = len(selected_features)
-                hidden_size = 128
-                num_layers = 2
-                num_classes = 2
-                if self.classification_model == 'lstm':
-                    classifier = LSTMClassifier(input_size, hidden_size, num_layers, num_classes)
-                elif self.classification_model == 'mlp':
-                    pass
-                    # classifier = MLPClassifier(mlp_input_size, hidden_size, num_classes)
-                else:
-                    raise ValueError("Invalid classification model")
-                
-                train_model(classifier, self.train_batches, self.val_batches, num_epochs=10)
-                test_acc, test_f1 = evaluate_model(classifier, self.test_batches)
-
-                
-                self.performance_dict[name] = test_acc
-
-            else:
+            input_size = len(selected_features)
+            hidden_size = 128
+            num_layers = 2
+            num_classes = 2
+            if self.classification_model == 'lstm':
+                classifier = LSTMClassifier(input_size, hidden_size, num_layers, num_classes)
+            elif self.classification_model == 'mlp':
                 pass
+                # classifier = MLPClassifier(mlp_input_size, hidden_size, num_classes)
+            else:
+                raise ValueError("Invalid classification model")
+            
+            train_model(classifier, self.train_batches, self.val_batches, num_epochs=10)
+            test_acc, test_f1 = evaluate_model(classifier, self.test_batches)
+
+            
+            self.performance_dict[name] = test_acc
+
+            # else:
+            #     pass
         
 
 

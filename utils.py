@@ -63,7 +63,7 @@ def train_model(model, train_batches, val_batches, num_epochs=10, device='cuda' 
             # sequences = batch['sequences'].to(device)
             # labels = batch['labels'].to(device)
             sequences = torch.tensor(batch['sequences'], dtype=torch.float32).to(device)
-            labels = torch.tensor(batch['labels'], dtype=torch.long).to(device)
+            labels = batch['labels'].to(dtype=torch.long, device=device)
             
             optimizer.zero_grad()
             outputs = model(sequences)
@@ -84,7 +84,7 @@ def train_model(model, train_batches, val_batches, num_epochs=10, device='cuda' 
         with torch.no_grad():
             for batch in val_batches:
                 sequences = torch.tensor(batch['sequences'], dtype=torch.float32).to(device)
-                labels = torch.tensor(batch['labels'], dtype=torch.long).to(device)
+                labels = batch['labels'].to(dtype=torch.long, device=device)
                 # sequences = batch['sequences'].to(device)
                 # labels = batch['labels'].to(device)
                 outputs = model(sequences)
@@ -111,7 +111,7 @@ def evaluate_model(model, test_batches, device='cuda' if torch.cuda.is_available
             # sequences = batch['sequences'].to(device)
             # labels = batch['labels'].to(device)
             sequences = torch.tensor(batch['sequences'], dtype=torch.float32).to(device)
-            labels = torch.tensor(batch['labels'], dtype=torch.long).to(device)
+            labels = batch['labels'].to(dtype=torch.long, device=device)
             outputs = model(sequences)
             test_preds.extend(torch.argmax(outputs, dim=1).cpu().numpy())
             test_true.extend(labels.cpu().numpy())
